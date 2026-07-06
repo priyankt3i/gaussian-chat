@@ -10,7 +10,7 @@ This repo is a scaffold, not a production-ready avatar system yet.
 - **Backend:** FastAPI + FastRTC-shaped Python server.
 - **Audio:** Placeholder echo loop only. LLaMA-Omni is not integrated.
 - **Animation:** Random Gaussian offset generation exists in Python, but it is not yet streamed to the browser or applied to the splat buffers.
-- **UI:** Detroit-inspired menu mockup. It still needs to become the intended minimal chatbot UI with a settings modal.
+- **UI:** Minimal avatar conversation shell with one settings modal for model, voice, avatar asset, and render quality.
 
 ## Run Locally
 
@@ -22,7 +22,7 @@ Use two terminals from the repo root.
 cd /workspaces/gaussian-chat
 python -m venv .venv
 source .venv/bin/activate
-pip install fastapi "uvicorn[standard]" numpy "fastrtc[vad]"
+pip install fastapi "uvicorn[standard]" httpx numpy "fastrtc[vad]"
 python server.py
 ```
 
@@ -42,7 +42,7 @@ http://localhost:8000
 The current client expects the FastRTC offer endpoint at:
 
 ```text
-http://localhost:8000/rtc/offer
+http://localhost:8000/webrtc/offer
 ```
 
 ### 2. Frontend
@@ -59,7 +59,17 @@ Open:
 http://localhost:3000
 ```
 
-Click **CONTINUE** to request microphone access and attempt the WebRTC connection.
+Click **Start Conversation** to request microphone access and attempt the WebRTC connection. Use **Settings** to configure the model endpoint, voice, avatar asset, and render quality.
+
+Optional frontend overrides:
+
+```bash
+VITE_BACKEND_OFFER_URL="http://localhost:8000/webrtc/offer"
+VITE_SPLAT_URL="https://your-host/avatar.ksplat"
+```
+
+If `VITE_SPLAT_URL` is unset or fails to load, the app shows a local placeholder avatar so the UI can still run.
+Remote avatar URLs are loaded through the Python backend proxy to avoid browser CORS failures. Hugging Face `/blob/` URLs are automatically rewritten to `/resolve/` URLs before proxying.
 
 ## Troubleshooting
 
@@ -67,6 +77,8 @@ Click **CONTINUE** to request microphone access and attempt the WebRTC connectio
 - If the backend fails with `ModuleNotFoundError`, activate `.venv` and reinstall the Python packages above.
 - If the backend says `Install fastrtc[vad] to use ReplyOnPause`, run `pip install -r requirements.txt`.
 - On first backend startup, FastRTC downloads a Silero VAD model from Hugging Face. If the download is slow or rate-limited, set `HF_TOKEN` in your environment.
+- The `onnxruntime` PCI warning and FastAPI `on_event` deprecation warning are currently non-blocking.
+- If a remote `.ksplat/.splat/.ply/.spz` URL does not load, make sure the backend is running; the frontend uses `/asset-proxy/...` on the backend for those assets.
 - If microphone access fails, use `localhost` or HTTPS. Browsers generally block mic access on insecure origins.
 - If WebRTC connects unreliably outside local development, production needs TURN credentials instead of only public STUN.
 

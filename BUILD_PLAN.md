@@ -14,9 +14,9 @@ This document tracks the work needed to move the current scaffold into a product
 *Goal: Replace the decorative game menu mock with the intended avatar conversation portal.*
 
 1. **Next.js Migration:** Move the frontend from Vite + React into a Next.js app structure with an `app/page.tsx` entrypoint.
-2. **Minimal Chatbot UI:** Center the avatar face as the primary first-screen object; expose a single `Start Conversation` control and live session status.
-3. **Settings Modal:** Add configuration for S2S provider, model endpoint, `.splat/.ksplat` source, render quality, backend URL, TURN mode, microphone device, speaker device, and debug overlay.
-4. **Responsive Polish:** Keep the Detroit-inspired clean blue-white visual language without the unrelated game buttons, extras menu, or "return to desktop" affordance.
+2. **Minimal Chatbot UI:** Keep the avatar face as the primary first-screen object with a single `Start Conversation` control and live session status.
+3. **Settings Modal:** Extend the current modal with TURN mode, microphone device, speaker device, and debug overlay controls.
+4. **Responsive Polish:** Continue refining the Detroit-inspired clean blue-white visual language around the simplified control surface.
 
 ## Phase 2: Real Realtime Transport
 *Goal: Implement the raw audio and animation data loop that the scaffold currently only suggests.*

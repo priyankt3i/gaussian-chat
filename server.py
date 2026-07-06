@@ -1,12 +1,39 @@
 import asyncio
+from urllib.parse import urlparse
+
+import httpx
 import numpy as np
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Query, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastrtc import (
     Stream,
     ReplyOnPause
 )
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1):\d+$",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+SUPPORTED_ASSET_EXTENSIONS = {
+    ".ksplat": "application/octet-stream",
+    ".splat": "application/octet-stream",
+    ".ply": "application/octet-stream",
+    ".spz": "application/octet-stream",
+}
+
+
+def normalize_remote_asset_url(url: str) -> str:
+    """Convert common web page URLs into direct downloadable asset URLs."""
+    if "huggingface.co" in url and "/blob/" in url:
+        return url.replace("/blob/", "/resolve/", 1)
+
+    return url
 
 # ---------------------------------------------------------------------------
 # Phase 1: Infrastructure & Data Loop
@@ -69,6 +96,42 @@ stream = Stream(
 # Mount the fastrtc stream to the FastAPI app
 # This handles the WebRTC signaling via /rtc endpoint
 stream.mount(app)
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
+@app.get("/asset-proxy/{filename}")
+async def proxy_asset(filename: str, url: str = Query(...)):
+    suffix = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if suffix not in SUPPORTED_ASSET_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Unsupported asset extension")
+
+    normalized_url = normalize_remote_asset_url(url)
+    parsed_url = urlparse(normalized_url)
+    if parsed_url.scheme not in {"http", "https"}:
+        raise HTTPException(status_code=400, detail="Only http/https asset URLs can be proxied")
+
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=120) as client:
+            upstream_response = await client.get(normalized_url)
+            upstream_response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(
+            status_code=exc.response.status_code,
+            detail=f"Could not fetch remote asset: {exc.response.reason_phrase}",
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Could not fetch remote asset: {exc}") from exc
+
+    return Response(
+        content=upstream_response.content,
+        media_type=SUPPORTED_ASSET_EXTENSIONS[suffix],
+        headers={
+            "Cache-Control": "public, max-age=3600",
+            "Content-Disposition": f'inline; filename="{filename}"',
+        },
+    )
 
 @app.on_event("startup")
 async def startup_event():

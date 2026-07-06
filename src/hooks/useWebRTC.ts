@@ -1,5 +1,22 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
+function waitForIceGatheringComplete(peerConnection: RTCPeerConnection) {
+  if (peerConnection.iceGatheringState === 'complete') {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve) => {
+    const handleStateChange = () => {
+      if (peerConnection.iceGatheringState === 'complete') {
+        peerConnection.removeEventListener('icegatheringstatechange', handleStateChange);
+        resolve();
+      }
+    };
+
+    peerConnection.addEventListener('icegatheringstatechange', handleStateChange);
+  });
+}
+
 export function useWebRTC(endpointUrl: string) {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -8,6 +25,22 @@ export function useWebRTC(endpointUrl: string) {
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
+
+  const disconnect = useCallback(() => {
+    if (dataChannelRef.current) {
+      dataChannelRef.current.close();
+      dataChannelRef.current = null;
+    }
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+    }
+    setIsConnected(false);
+  }, []);
 
   const connect = useCallback(async () => {
     setIsConnecting(true);
@@ -47,17 +80,20 @@ export function useWebRTC(endpointUrl: string) {
       };
 
       // 5. Offer/Answer SDP exchange (mocked for fastrtc endpoint)
-      // FastRTC creates an offer via POST to /rtc
+      // FastRTC accepts browser offers via POST to /webrtc/offer.
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
+      await waitForIceGatheringComplete(pc);
 
       try {
+        const webrtcId = crypto.randomUUID();
         const response = await fetch(endpointUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sdp: pc.localDescription?.sdp,
             type: pc.localDescription?.type,
+            webrtc_id: webrtcId,
           }),
         });
         
@@ -72,6 +108,7 @@ export function useWebRTC(endpointUrl: string) {
         console.warn("Could not connect to backend, running in offline mode.", err);
         // We do not set isConnected to true, but we don't crash.
         setError("Backend unreachable. Ensure server.py is running on port 8000.");
+        disconnect();
       }
 
     } catch (err: any) {
@@ -80,20 +117,7 @@ export function useWebRTC(endpointUrl: string) {
     } finally {
       setIsConnecting(false);
     }
-  }, [endpointUrl]);
-
-  const disconnect = useCallback(() => {
-    if (dataChannelRef.current) {
-      dataChannelRef.current.close();
-    }
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-    }
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
-    }
-    setIsConnected(false);
-  }, []);
+  }, [endpointUrl, disconnect]);
 
   // Cleanup on unmount
   useEffect(() => {
