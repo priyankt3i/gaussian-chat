@@ -1,0 +1,4 @@
+fastapi
+fastrtc[vad]
+numpy
+uvicorn[standard]

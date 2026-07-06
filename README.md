@@ -1,29 +1,83 @@
 # Gaussian S2S Portal
 
-A decoupled, real-time WebRTC 3D Gaussian Splatting interface designed for Speech-to-Speech (S2S) avatars, inspired by the minimalist, diegetic UI of *Detroit: Become Human*.
+A decoupled WebRTC prototype for a real-time Speech-to-Speech (S2S) 3D Gaussian Splatting avatar, inspired by the minimal menu language of *Detroit: Become Human*.
 
-## Architecture
+## Current Status
 
-This portal is designed to connect a high-performance web frontend with a backend audio and animation engine.
+This repo is a scaffold, not a production-ready avatar system yet.
 
-1. **Frontend:** React + Three.js (`@react-three/fiber`) rendering a 3D Gaussian Splat using `@mkkellogg/gaussian-splats-3d`.
-2. **Transport:** WebRTC via Hugging Face `fastrtc` for sub-500ms latency bidirectional audio and data streams.
-3. **Audio Brain (Backend):** Speech-to-Speech model (e.g., LLaMA-Omni) handling native audio-in to audio-out.
-4. **Animation Engine (Backend):** `GaussianSpeech` architecture extracting Hubert features to calculate 3D Gaussian position and rotation offsets, streamed via WebRTC Data Channels.
+- **Frontend:** Vite + React + Three.js using `@react-three/fiber` and `@mkkellogg/gaussian-splats-3d`.
+- **Backend:** FastAPI + FastRTC-shaped Python server.
+- **Audio:** Placeholder echo loop only. LLaMA-Omni is not integrated.
+- **Animation:** Random Gaussian offset generation exists in Python, but it is not yet streamed to the browser or applied to the splat buffers.
+- **UI:** Detroit-inspired menu mockup. It still needs to become the intended minimal chatbot UI with a settings modal.
 
-## Usage
+## Run Locally
 
-### Frontend (React/Next.js)
+Use two terminals from the repo root.
 
-1. Install dependencies: `npm install`
-2. Start the development server: `npm run dev`
-3. Navigate to the application URL.
-4. Click on **CONTINUE** to initialize the WebRTC connection and start the microphone stream.
+### 1. Backend
 
-### Backend (Python/FastRTC)
+```bash
+cd /workspaces/gaussian-chat
+python -m venv .venv
+source .venv/bin/activate
+pip install fastapi "uvicorn[standard]" numpy "fastrtc[vad]"
+python server.py
+```
 
-1. Ensure Python dependencies are installed (`fastapi`, `fastrtc`, `uvicorn`, `numpy`).
-2. Run the server: `python server.py`
-3. The server runs on `localhost:8000` and exposes the `/rtc/offer` endpoint for signaling.
+Or install from the project dependency file:
 
-*Note: The current backend is a scaffolded mock. It echoes audio and generates random coordinate offsets for testing.*
+```bash
+pip install -r requirements.txt
+python server.py
+```
+
+The backend runs on:
+
+```text
+http://localhost:8000
+```
+
+The current client expects the FastRTC offer endpoint at:
+
+```text
+http://localhost:8000/rtc/offer
+```
+
+### 2. Frontend
+
+```bash
+cd /workspaces/gaussian-chat
+npm ci
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+Click **CONTINUE** to request microphone access and attempt the WebRTC connection.
+
+## Troubleshooting
+
+- If the frontend fails with `Cannot find native binding`, rerun `npm ci`. This restores Tailwind's optional native package.
+- If the backend fails with `ModuleNotFoundError`, activate `.venv` and reinstall the Python packages above.
+- If the backend says `Install fastrtc[vad] to use ReplyOnPause`, run `pip install -r requirements.txt`.
+- On first backend startup, FastRTC downloads a Silero VAD model from Hugging Face. If the download is slow or rate-limited, set `HF_TOKEN` in your environment.
+- If microphone access fails, use `localhost` or HTTPS. Browsers generally block mic access on insecure origins.
+- If WebRTC connects unreliably outside local development, production needs TURN credentials instead of only public STUN.
+
+## Production Direction
+
+The intended production architecture is:
+
+1. **Next.js portal:** Minimal chatbot UI centered around the avatar face, plus a settings modal for model/provider, `.splat/.ksplat` source, render quality, backend URL, and audio devices.
+2. **Realtime backend:** FastAPI/FastRTC service for raw audio in, generated audio out, session state, and TURN-aware signaling.
+3. **S2S model service:** Native audio-to-audio model such as LLaMA-Omni or a licensed replacement.
+4. **Avatar animation service:** GaussianSpeech/GaussianTalker-style model producing synchronized facial motion or rendered avatar frames.
+5. **Deployment:** Split hosting, with the frontend on web hosting and the Python/model backend on a GPU-capable container host.
+
+See `BUILD_PLAN.md` for the production roadmap.

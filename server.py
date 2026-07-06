@@ -1,12 +1,9 @@
 import asyncio
-import json
 import numpy as np
 from fastapi import FastAPI
 from fastrtc import (
     Stream,
-    ReplyOnPause,
-    get_twilio_turn_credentials,
-    AudioStream
+    ReplyOnPause
 )
 
 app = FastAPI()
@@ -21,7 +18,8 @@ app = FastAPI()
 # For this Phase 1 scaffold, we implement the WebRTC loop:
 # 1. Receive incoming microphone audio chunks.
 # 2. Echo the audio back (placeholder for S2S inference).
-# 3. Stream dummy Float32Array coordinate offsets via WebRTC Data Channel.
+# 3. Generate dummy Float32Array coordinate offsets for the future animation
+#    stream. These are not wired to a WebSocket/Data Channel yet.
 # ---------------------------------------------------------------------------
 
 async def process_audio(audio_chunk: tuple[int, np.ndarray]):
