@@ -1,0 +1,10 @@
+{
+  "name": "Gaussian S2S Portal",
+  "description": "Detroit Become Human-style real-time WebRTC 3D Gaussian Splatting interface.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

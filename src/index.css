@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background-color: #f4f7fb;
+  color: #0f172a;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Mimic the geometric shape of the Detroit active menu item */
+.detroit-polygon {
+  clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+  background: linear-gradient(90deg, #2c5982 0%, #689ec4 100%);
+}
