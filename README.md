@@ -1,20 +1,29 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Gaussian S2S Portal
 
-# Run and deploy your AI Studio app
+A decoupled, real-time WebRTC 3D Gaussian Splatting interface designed for Speech-to-Speech (S2S) avatars, inspired by the minimalist, diegetic UI of *Detroit: Become Human*.
 
-This contains everything you need to run your app locally.
+## Architecture
 
-View your app in AI Studio: https://ai.studio/apps/bf4cd7b0-a520-40e8-bb3c-5147d955fcce
+This portal is designed to connect a high-performance web frontend with a backend audio and animation engine.
 
-## Run Locally
+1. **Frontend:** React + Three.js (`@react-three/fiber`) rendering a 3D Gaussian Splat using `@mkkellogg/gaussian-splats-3d`.
+2. **Transport:** WebRTC via Hugging Face `fastrtc` for sub-500ms latency bidirectional audio and data streams.
+3. **Audio Brain (Backend):** Speech-to-Speech model (e.g., LLaMA-Omni) handling native audio-in to audio-out.
+4. **Animation Engine (Backend):** `GaussianSpeech` architecture extracting Hubert features to calculate 3D Gaussian position and rotation offsets, streamed via WebRTC Data Channels.
 
-**Prerequisites:**  Node.js
+## Usage
 
+### Frontend (React/Next.js)
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Install dependencies: `npm install`
+2. Start the development server: `npm run dev`
+3. Navigate to the application URL.
+4. Click on **CONTINUE** to initialize the WebRTC connection and start the microphone stream.
+
+### Backend (Python/FastRTC)
+
+1. Ensure Python dependencies are installed (`fastapi`, `fastrtc`, `uvicorn`, `numpy`).
+2. Run the server: `python server.py`
+3. The server runs on `localhost:8000` and exposes the `/rtc/offer` endpoint for signaling.
+
+*Note: The current backend is a scaffolded mock. It echoes audio and generates random coordinate offsets for testing.*
