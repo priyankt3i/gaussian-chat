@@ -7,3 +7,9 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Avatars cloned in the studio stay local; only the built-in seed is committed.
+data/avatars/*
+!data/avatars/albert-einstein/
+__pycache__/
+.pytest_cache/

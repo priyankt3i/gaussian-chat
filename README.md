@@ -1,95 +1,97 @@
-# Gaussian S2S Portal
+# Persona Portal (gaussian-chat)
 
-A decoupled WebRTC prototype for a real-time Speech-to-Speech (S2S) 3D Gaussian Splatting avatar, inspired by the minimal menu language of *Detroit: Become Human*.
+Clone a photo into a real-time AI avatar, then have a live voice conversation with it. Think "talk to Albert Einstein": you speak, the avatar answers in character with a voice and an animated face, and you can interrupt it at any time.
 
-## Current Status
+The app has two parts:
 
-This repo is a scaffold, not a production-ready avatar system yet.
+1. **Avatar Studio:** upload a portrait, write (or let Claude draft) a persona, pick a voice, and record who the person is (consent). The photo is prepared once by the face engine and saved as a reusable avatar.
+2. **Talk:** pick any avatar from the gallery and talk in one of two modes:
+   - **Always listening:** voice activity detection decides when you've finished a sentence. Speaking while the avatar talks interrupts it.
+   - **Push to talk:** hold the button (or Space) while you speak and release to send. Pressing it while the avatar is talking cuts it off.
 
-- **Frontend:** Vite + React + Three.js using `@react-three/fiber` and `@mkkellogg/gaussian-splats-3d`.
-- **Backend:** FastAPI + FastRTC-shaped Python server.
-- **Audio:** Placeholder echo loop only. LLaMA-Omni is not integrated.
-- **Animation:** Random Gaussian offset generation exists in Python, but it is not yet streamed to the browser or applied to the splat buffers.
-- **UI:** Minimal avatar conversation shell with one settings modal for model, voice, avatar asset, and render quality.
+## How it works
 
-## Run Locally
+```
+Browser mic ──WebRTC──▶ FastRTC VAD ──▶ speech-to-text ──▶ Claude (in character, streaming)
+     ▲                                                        │ sentence by sentence
+     └──────────── WebRTC audio ◀── text-to-speech ◀──────────┘
+     └──────────── live captions (server-sent events)
+```
+
+- **Transport and turn-taking:** [FastRTC](https://fastrtc.org) `ReplyOnPause` with `can_interrupt=True`. Push-to-talk mutes the mic track between presses, so the release reads as a pause and both modes share one server handler.
+- **Speech-to-text:** Moonshine (FastRTC built-in, runs on CPU).
+- **Brain:** Claude through the Anthropic SDK, streamed so the avatar starts speaking after the first sentence. History is kept per call. When you interrupt, only the part that was actually spoken is remembered.
+- **Voice:** Kokoro (FastRTC built-in, runs on CPU) with a preset voice per avatar. A voice sample can be stored with each avatar for a future voice-cloning engine.
+- **Face:** the `portrait` face engine. The browser animates the cloned photo from the avatar's live voice level (breathing, head motion, speaking glow). This is a stand-in; see *Roadmap*.
+
+## Run locally
 
 Use two terminals from the repo root.
 
 ### 1. Backend
 
 ```bash
-cd /workspaces/gaussian-chat
 python -m venv .venv
 source .venv/bin/activate
-pip install fastapi "uvicorn[standard]" httpx numpy "fastrtc[vad]"
-python server.py
-```
-
-Or install from the project dependency file:
-
-```bash
 pip install -r requirements.txt
+export ANTHROPIC_API_KEY=sk-ant-...   # or sign in once with `ant auth login`
 python server.py
 ```
 
-The backend runs on:
+The backend runs on `http://localhost:8000`. On first start it downloads the VAD, speech-to-text and text-to-speech models (a few hundred MB), so the first launch takes a while.
 
-```text
-http://localhost:8000
-```
+Optional settings:
 
-The current client expects the FastRTC offer endpoint at:
+| Variable | Default | Purpose |
+|---|---|---|
+| `AVATAR_CLAUDE_MODEL` | `claude-opus-5-5` | Model that plays the persona |
+| `AVATAR_CLAUDE_EFFORT` | `low` | Thinking effort. Low keeps the time to first word short |
+| `AVATAR_DATA_DIR` | `data/avatars` | Where cloned avatars are stored |
+| `CORS_ORIGIN_REGEX` | localhost only | Allowed frontend origins |
 
-```text
-http://localhost:8000/webrtc/offer
-```
+Persona replies use the `server-side-fallback-2026-07-01` beta (`fallbacks: "default"`), so a request the model declines is retried on Anthropic's recommended fallback model instead of failing the turn.
 
 ### 2. Frontend
 
 ```bash
-cd /workspaces/gaussian-chat
 npm ci
 npm run dev
 ```
 
-Open:
+Open `http://localhost:3000`. Set `VITE_BACKEND_URL` if the backend is not on port 8000 of the same host.
 
-```text
-http://localhost:3000
-```
-
-Click **Start Conversation** to request microphone access and attempt the WebRTC connection. Use **Settings** to configure the model endpoint, voice, avatar asset, and render quality.
-
-Optional frontend overrides:
+### Tests
 
 ```bash
-VITE_BACKEND_OFFER_URL="http://localhost:8000/webrtc/offer"
-VITE_SPLAT_URL="https://your-host/avatar.ksplat"
+pip install -r requirements-dev.txt
+pytest
+npm run lint && npm run build
 ```
 
-If `VITE_SPLAT_URL` is unset or fails to load, the app shows a local placeholder avatar so the UI can still run.
-Remote avatar URLs are loaded through the Python backend proxy to avoid browser CORS failures. Hugging Face `/blob/` URLs are automatically rewritten to `/resolve/` URLs before proxying.
+The backend tests use fake speech models and a fake Claude, so they run offline and cost nothing.
+
+## Avatars and consent
+
+- Avatars live in `data/avatars/<id>/` (`avatar.json`, `portrait.png`, optional voice sample). Only the built-in Albert Einstein avatar is committed. Avatars you create in the Studio stay local.
+- The Einstein avatar ships with a drawn placeholder portrait. For a realistic face, create a new avatar in the Studio with a public-domain photo, such as Ferdinand Schmutzer's 1921 portrait on Wikimedia Commons.
+- Every avatar records a consent basis: a historical figure, yourself, or someone who gave written permission. The call screen labels every avatar as an **AI recreation**.
+- Names and likenesses of famous people can be legally protected even after death (Einstein's are licensed by the Hebrew University of Jerusalem). Personal and educational use is low risk. Get rights or legal advice before a commercial launch.
+
+## Roadmap
+
+1. **Neural face engine.** Replace the portrait engine with a real-time talking-head model that animates a single photo, such as Ditto. It plugs into `backend/face.py`: `prepare()` precomputes the source features when an avatar is cloned, and with `renders_video = True` the FastRTC stream switches to `audio-video` so the server sends frames driven by the same TTS audio. `LiveFace.tsx` then shows the video track instead of the still image. This needs an NVIDIA GPU.
+2. **Voice cloning.** Swap Kokoro for a cloning TTS (CosyVoice, F5-TTS or GPT-SoVITS) that uses each avatar's stored voice sample. Check each model's license.
+3. **Production hardening.** TURN servers, authentication, per-user avatar storage, rate limits, and GPU hosting. See `BUILD_PLAN.md`.
+
+The earlier Gaussian-splat viewer (`src/components/SplatViewer.tsx`) and the `/asset-proxy` endpoint are kept for a later 3D avatar mode but are not used by the current UI.
 
 ## Troubleshooting
 
 - If the frontend fails with `Cannot find native binding`, rerun `npm ci`. This restores Tailwind's optional native package.
-- If the backend fails with `ModuleNotFoundError`, activate `.venv` and reinstall the Python packages above.
-- If the backend says `Install fastrtc[vad] to use ReplyOnPause`, run `pip install -r requirements.txt`.
-- On first backend startup, FastRTC downloads a Silero VAD model from Hugging Face. If the download is slow or rate-limited, set `HF_TOKEN` in your environment.
-- The `onnxruntime` PCI warning and FastAPI `on_event` deprecation warning are currently non-blocking.
-- If a remote `.ksplat/.splat/.ply/.spz` URL does not load, make sure the backend is running; the frontend uses `/asset-proxy/...` on the backend for those assets.
-- If microphone access fails, use `localhost` or HTTPS. Browsers generally block mic access on insecure origins.
-- If WebRTC connects unreliably outside local development, production needs TURN credentials instead of only public STUN.
-
-## Production Direction
-
-The intended production architecture is:
-
-1. **Next.js portal:** Minimal chatbot UI centered around the avatar face, plus a settings modal for model/provider, `.splat/.ksplat` source, render quality, backend URL, and audio devices.
-2. **Realtime backend:** FastAPI/FastRTC service for raw audio in, generated audio out, session state, and TURN-aware signaling.
-3. **S2S model service:** Native audio-to-audio model such as LLaMA-Omni or a licensed replacement.
-4. **Avatar animation service:** GaussianSpeech/GaussianTalker-style model producing synchronized facial motion or rendered avatar frames.
-5. **Deployment:** Split hosting, with the frontend on web hosting and the Python/model backend on a GPU-capable container host.
-
-See `BUILD_PLAN.md` for the production roadmap.
+- If the backend fails with `ModuleNotFoundError`, activate `.venv` and run `pip install -r requirements.txt`.
+- Model downloads come from Hugging Face and GitHub on first start. If they are slow or rate-limited, set `HF_TOKEN`.
+- Without Anthropic credentials, **Draft personality** returns 503, and during a call the transcript shows "The avatar could not answer" with the error.
+- In always-listening mode, use headphones if the avatar keeps interrupting itself. Browser echo cancellation helps, but speakers next to the mic can still trigger barge-in.
+- Microphone access only works on `localhost` or HTTPS.
+- Outside local development, WebRTC needs TURN credentials, not only public STUN.
+- The `onnxruntime` PCI warning and the FastAPI `on_event` deprecation warning are harmless.

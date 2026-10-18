@@ -1,5 +1,8 @@
+anthropic>=1.15
 fastapi
-fastrtc[vad]
+fastrtc[vad,stt,tts]
 httpx
 numpy
+pillow
+python-multipart
 uvicorn[standard]

@@ -1,6 +1,21 @@
 # Changelog
 
-## [UI Configuration Shell] - Current
+## [Persona Avatars] - Current
+
+### Added
+- **Avatar Studio:** upload a portrait, write or Claude-draft a persona prompt, greeting and tagline, pick a voice, optionally attach a voice sample, and record a consent basis. Photos are validated and square-cropped by the `portrait` face engine (`backend/face.py`).
+- **Talk:** avatar gallery and live call screen with an animated portrait, live transcript, and two talk modes: always listening (VAD with barge-in) and push to talk (button or Space).
+- **Voice pipeline (`backend/conversation.py`):** Moonshine speech-to-text, Claude streamed in character with per-call history, sentence-by-sentence Kokoro text-to-speech, spoken greeting on connect, and interruption-aware history.
+- **API:** `/avatars` (list, get, create, delete, files), `/avatars/persona-draft`, `/voices`, `/sessions` (bind a WebRTC call to an avatar) and `/sessions/{id}/captions` (server-sent events).
+- Built-in Albert Einstein avatar with a placeholder portrait.
+- Offline backend tests (`tests/test_backend.py`) using fake speech models and a fake Claude.
+
+### Changed
+- The UI is now the persona portal. The Gaussian splat viewer and `/asset-proxy` remain in the repo but are unused.
+- Replaced the echo placeholder handler and the `useWebRTC` hook with the real conversation loop and `useConversation`.
+- `VITE_BACKEND_URL` replaces `VITE_BACKEND_OFFER_URL`.
+
+## [UI Configuration Shell]
 
 ### Changed
 - Replaced the Detroit-style game menu items with one conversation action and one settings control.

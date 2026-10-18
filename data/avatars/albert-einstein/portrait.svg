@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 768 768">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#f4f1ea"/>
+      <stop offset="1" stop-color="#c9c2b4"/>
+    </radialGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e2c3a6"/>
+      <stop offset="1" stop-color="#c79f80"/>
+    </linearGradient>
+  </defs>
+  <rect width="768" height="768" fill="url(#bg)"/>
+  <!-- jacket and shirt -->
+  <path d="M120 768c18-150 120-214 264-214s246 64 264 214z" fill="#3e3a36"/>
+  <path d="M330 560l54 96 54-96z" fill="#efe9de"/>
+  <!-- neck -->
+  <path d="M326 470h116v100c-20 18-96 18-116 0z" fill="url(#skin)"/>
+  <!-- hair -->
+  <path d="M206 300c-40-40-28-120 20-150 4-52 68-94 124-74 40-38 120-34 150 10 58-8 110 40 104 100 44 26 54 96 18 128 22 40-6 92-46 96l-28-60c4-60-40-150-164-150s-170 90-162 152l-26 58c-44-6-66-62-34-102z" fill="#ece9e4" stroke="#bdb7ad" stroke-width="4"/>
+  <!-- face -->
+  <ellipse cx="384" cy="350" rx="140" ry="168" fill="url(#skin)"/>
+  <!-- ears -->
+  <ellipse cx="246" cy="360" rx="22" ry="40" fill="#cfa98a"/>
+  <ellipse cx="522" cy="360" rx="22" ry="40" fill="#cfa98a"/>
+  <!-- brows -->
+  <path d="M296 296c26-22 64-24 88-8" stroke="#d8d3cb" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <path d="M472 296c-26-22-64-24-88-8" stroke="#d8d3cb" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <!-- eyes -->
+  <ellipse cx="334" cy="330" rx="18" ry="11" fill="#3b3029"/>
+  <ellipse cx="434" cy="330" rx="18" ry="11" fill="#3b3029"/>
+  <path d="M308 352c16 10 36 10 52 0M408 352c16 10 36 10 52 0" stroke="#a9826a" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- nose -->
+  <path d="M384 336c-6 40-22 62-20 76 8 10 32 10 42 0" stroke="#a9826a" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- moustache -->
+  <path d="M310 438c20-30 56-30 74-16 18-14 54-14 74 16-20 24-56 24-74 10-18 14-54 14-74-10z" fill="#e6e2db" stroke="#bdb7ad" stroke-width="3"/>
+  <!-- mouth -->
+  <path d="M350 470c22 10 46 10 68 0" stroke="#8d5f4c" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- lines -->
+  <path d="M320 258c40-8 88-8 128 0M330 272c36-6 72-6 108 0" stroke="#b48f74" stroke-width="3" fill="none" opacity=".7"/>
+</svg>
