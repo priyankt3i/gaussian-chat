@@ -38,7 +38,7 @@ KOKORO_VOICES = {
     "bf_isabella": "British female, crisp",
 }
 
-ConsentBasis = Literal["historical_figure", "myself", "documented_consent"]
+ConsentBasis = Literal["historical_figure", "myself", "documented_consent", "ai_generated"]
 
 MAX_VOICE_SAMPLE_BYTES = 10 * 1024 * 1024
 VOICE_SAMPLE_EXTENSIONS = {".wav", ".mp3", ".m4a", ".ogg", ".webm"}

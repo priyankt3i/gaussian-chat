@@ -7,7 +7,8 @@
 - **Talk:** avatar gallery and live call screen with an animated portrait, live transcript, and two talk modes: always listening (VAD with barge-in) and push to talk (button or Space).
 - **Voice pipeline (`backend/conversation.py`):** Moonshine speech-to-text, Claude streamed in character with per-call history, sentence-by-sentence Kokoro text-to-speech, spoken greeting on connect, and interruption-aware history.
 - **API:** `/avatars` (list, get, create, delete, files), `/avatars/persona-draft`, `/voices`, `/sessions` (bind a WebRTC call to an avatar) and `/sessions/{id}/captions` (server-sent events).
-- Built-in Albert Einstein avatar with a placeholder portrait.
+- Built-in Albert Einstein avatar with a placeholder portrait, and Sofia, a fictional character built from an AI-generated photo.
+- "Fictional (AI-generated)" consent option. Those avatars are labeled "AI character" instead of "AI recreation".
 - Offline backend tests (`tests/test_backend.py`) using fake speech models and a fake Claude.
 
 ### Changed

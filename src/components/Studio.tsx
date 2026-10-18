@@ -12,6 +12,7 @@ const consentOptions: { value: ConsentBasis; label: string; hint: string }[] = [
   { value: 'historical_figure', label: 'Historical figure', hint: 'A public figure who has died. Check estate and likeness rights before commercial use.' },
   { value: 'myself', label: 'Myself', hint: 'The photo and voice are of me.' },
   { value: 'documented_consent', label: 'Someone who agreed', hint: 'I have this person’s written permission to clone them.' },
+  { value: 'ai_generated', label: 'Fictional (AI-generated)', hint: 'The photo is AI-generated and does not depict a real person.' },
 ];
 
 const inputClass =

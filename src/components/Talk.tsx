@@ -115,7 +115,7 @@ export function AvatarCall({ avatar, onBack }: CallProps) {
         <div className="grid justify-items-center gap-1 text-center">
           <h2 className="text-xl font-semibold text-slate-900">{avatar.name}</h2>
           <span className="border border-slate-300 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-500">
-            AI recreation
+            {avatar.consent_basis === 'ai_generated' ? 'AI character' : 'AI recreation'}
           </span>
         </div>
 

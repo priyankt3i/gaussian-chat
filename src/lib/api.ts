@@ -2,7 +2,7 @@ export const BACKEND_URL = (
   import.meta.env.VITE_BACKEND_URL || `${window.location.protocol}//${window.location.hostname}:8000`
 ).replace(/\/$/, '');
 
-export type ConsentBasis = 'historical_figure' | 'myself' | 'documented_consent';
+export type ConsentBasis = 'historical_figure' | 'myself' | 'documented_consent' | 'ai_generated';
 
 export interface Avatar {
   id: string;

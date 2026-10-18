@@ -8,8 +8,9 @@ coverage/
 .env*
 !.env.example
 
-# Avatars cloned in the studio stay local; only the built-in seed is committed.
+# Avatars cloned in the studio stay local; only the built-in avatars are committed.
 data/avatars/*
 !data/avatars/albert-einstein/
+!data/avatars/sofia/
 __pycache__/
 .pytest_cache/

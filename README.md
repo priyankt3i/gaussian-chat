@@ -72,9 +72,9 @@ The backend tests use fake speech models and a fake Claude, so they run offline 
 
 ## Avatars and consent
 
-- Avatars live in `data/avatars/<id>/` (`avatar.json`, `portrait.png`, optional voice sample). Only the built-in Albert Einstein avatar is committed. Avatars you create in the Studio stay local.
+- Avatars live in `data/avatars/<id>/` (`avatar.json`, `portrait.png`, optional voice sample). Only the built-in avatars (Albert Einstein and Sofia, a fictional character from an AI-generated photo) are committed. Avatars you create in the Studio stay local.
 - The Einstein avatar ships with a drawn placeholder portrait. For a realistic face, create a new avatar in the Studio with a public-domain photo, such as Ferdinand Schmutzer's 1921 portrait on Wikimedia Commons.
-- Every avatar records a consent basis: a historical figure, yourself, or someone who gave written permission. The call screen labels every avatar as an **AI recreation**.
+- Every avatar records a consent basis: a historical figure, yourself, someone who gave written permission, or a fictional person from an AI-generated photo. The call screen labels every avatar as an **AI recreation**.
 - Names and likenesses of famous people can be legally protected even after death (Einstein's are licensed by the Hebrew University of Jerusalem). Personal and educational use is low risk. Get rights or legal advice before a commercial launch.
 
 ## Roadmap
